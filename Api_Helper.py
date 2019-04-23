@@ -55,8 +55,8 @@ class LastFM:
 
         res = data['artist'] + ' - ' + data['name']
         img_url = data['image'][-1]['#text']
-        url = data['url']
-        return res, img_url, url
+        res += '\n\n' + data['url']
+        return res, img_url
 
 
 class YandexTranslator:

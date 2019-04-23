@@ -1,9 +1,10 @@
 import telebot
-import pylast
-import json
-import requests
+import logging
+from telebot import apihelper
 from pprint import pprint
 from Api_Helper import LastFM, YandexTranslator
+
+logging.basicConfig(level=logging.INFO, filename='bot.log')
 
 API_KEY = '423cad31da5633fa7e92daaea2c7170d'
 API_SECRET = 'd741138b2ad7a61abbbcfb6b2926adab'
@@ -17,7 +18,7 @@ bot = telebot.TeleBot('888587053:AAFXvpSr0VvvFkZZQOUlCveyzaeuImremQE')
 @bot.message_handler(commands=['start'])
 def handle_start(message):
     res = 'Привет! Я помогу тебе в мире музыки, вот что я умею:\n\n' \
-          '/top <artist>, <limit> - лучшие треки <артиста>, <кол-во выводимых треков>\n\n' \
+          '/top <artist>, <limit> - лучшие треки <артиста>, <кол-во выводимых треков>\n' \
           '/info <artist> - информация об артисте'
 
     bot.send_message(message.from_user.id, res)
@@ -49,7 +50,11 @@ def info(message):
 @bot.message_handler(commands=['track'])
 def track(message):
     args = [i.strip() for i in ' '.join(message.text.split()[1:]).split(',')]
-    ans = lfm.get_track(args[0], args[1])
+    if len(args) == 1:
+        ans, img_url = lfm.get_track(args[0])
+    else:
+        ans, img_url = lfm.get_track(args[0], args[1])
+    bot.send_photo(message.from_user.id, img_url, ans)
 
 
 bot.polling(none_stop=True, interval=0)
