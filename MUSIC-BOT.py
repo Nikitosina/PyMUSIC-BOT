@@ -3,33 +3,13 @@ import pylast
 import json
 import requests
 from pprint import pprint
+from Api_Helper import LastFM, YandexTranslator
 
-
-def get_top(artist=None, limit=10):
-    params = {'api_key': API_KEY, 'method': 'artist.gettoptracks', 'format': 'json', 'limit': limit}
-    if artist:
-        params['artist'] = artist
-    else:
-        params['method'] = 'chart.gettoptracks'
-    resp = requests.get(lfm_url, params=params).json()
-
-    if artist:
-        res = 'Итак, лучшие треки ' + resp['toptracks']['@attr']['artist'] + '\n\n'
-        for track in resp['toptracks']['track']:
-            res += track['@attr']['rank'] + '. ' + track['name'] + '\n'
-    else:
-        res = 'Итак, лучшие треки на данный момент:\n\n'
-        for i in range(limit):
-            track = resp['tracks']['track'][i]
-            res += str(i + 1) + '. ' + track['artist']['name'] + ' - ' + track['name'] + '\n'
-    return res[:-1]
-
-
-lfm_url = 'http://ws.audioscrobbler.com/2.0/'
 API_KEY = '423cad31da5633fa7e92daaea2c7170d'
 API_SECRET = 'd741138b2ad7a61abbbcfb6b2926adab'
-username = 'Nikit0s90'
-password = pylast.md5('Nikitos-123')
+
+lfm = LastFM(API_KEY, API_SECRET)
+yt = YandexTranslator('trnsl.1.1.20190407T111208Z.8aefe4bc9bb48f64.c75fe021dae573b3f89516244159eb075f0f0163')
 
 bot = telebot.TeleBot('888587053:AAFXvpSr0VvvFkZZQOUlCveyzaeuImremQE')
 
@@ -37,7 +17,8 @@ bot = telebot.TeleBot('888587053:AAFXvpSr0VvvFkZZQOUlCveyzaeuImremQE')
 @bot.message_handler(commands=['start'])
 def handle_start(message):
     res = 'Привет! Я помогу тебе в мире музыки, вот что я умею:\n\n' \
-          '/top <artist>, <limit> - лучшие треки <артиста>'
+          '/top <artist>, <limit> - лучшие треки <артиста>, <кол-во выводимых треков>\n\n' \
+          '/info <artist> - информация об артисте'
 
     bot.send_message(message.from_user.id, res)
 
@@ -48,12 +29,27 @@ def top(message):
     args = [i.strip() for i in ' '.join(message.text.split()[1:]).split(',')]
     print(args)
     if args[0].isdigit():
-        ans = get_top(limit=int(args[0]))
+        ans = lfm.get_top(limit=int(args[0]))
     elif len(args) == 1:
-        ans = get_top(args[0])
+        ans = lfm.get_top(args[0])
     elif len(args) == 2:
-        ans = get_top(args[0], int(args[1]))
+        ans = lfm.get_top(args[0], int(args[1]))
     bot.send_message(message.from_user.id, ans)
+
+
+@bot.message_handler(commands=['info'])
+def info(message):
+    args = ' '.join([i.strip() for i in message.text.split()[1:]])
+    ans, img_url = lfm.get_info(args)
+    # ans = yt.translate(ans)
+    print(len(ans))
+    bot.send_photo(message.from_user.id, img_url, ans)
+
+
+@bot.message_handler(commands=['track'])
+def track(message):
+    args = [i.strip() for i in ' '.join(message.text.split()[1:]).split(',')]
+    ans = lfm.get_track(args[0], args[1])
 
 
 bot.polling(none_stop=True, interval=0)
