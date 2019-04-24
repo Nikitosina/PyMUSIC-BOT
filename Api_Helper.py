@@ -94,7 +94,7 @@ class MusiXmatch:
         self.url = 'https://api.musixmatch.com/ws/1.1/'
 
     def abort_case(self, resp):
-        if resp['message']['header']['status_code'] != 200 or not resp['message']['body']['track_list']:
+        if resp['message']['header']['status_code'] != 200:
             return True
         return False
 
@@ -102,8 +102,7 @@ class MusiXmatch:
         url = self.url + 'track.search'
         params = {'apikey': self.key, 'q_artist': artist, 'q_track': track, 's_track_rating': 'desc'}
         resp = requests.get(url, params=params).json()
-        pprint(resp)
-        if self.abort_case(resp):
+        if self.abort_case(resp) or not resp['message']['body']['track_list']:
             return 'укыс', 'acre', 'awfce', 'awefer', 'afcers'
 
         for track in resp['message']['body']['track_list']:
@@ -116,7 +115,7 @@ class MusiXmatch:
         url = self.url + 'track.lyrics.get'
         params = {'apikey': self.key, 'track_id': track_id}
         resp = requests.get(url, params=params).json()
-        if self.abort_case(resp):
+        if self.abort_case(resp) or not resp['message']['body']:
             return 'Что-то пошло не так, попробуйте ещё раз'
 
         res = art + ' - ' + name + '\n\n'

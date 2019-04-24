@@ -1,7 +1,6 @@
 import telebot
 import logging
-from telebot import apihelper
-from pprint import pprint
+import time
 from Api_Helper import LastFM, YandexTranslator, MusiXmatch, readable_time
 
 logging.basicConfig(level=logging.INFO, filename='bot.log')
@@ -13,7 +12,7 @@ lfm = LastFM(API_KEY, API_SECRET)
 yt = YandexTranslator('trnsl.1.1.20190407T111208Z.8aefe4bc9bb48f64.c75fe021dae573b3f89516244159eb075f0f0163')
 musix = MusiXmatch('348e28b8e5487d197cda48a17debe1bb')
 
-# print(musix.get_lyrics('выамкеым'))
+print(musix.get_lyrics('seckn rkg'))
 # print(musix.get_info_by_lyrics('Never say, nihilist of modern day'))
 
 bot = telebot.TeleBot('888587053:AAFXvpSr0VvvFkZZQOUlCveyzaeuImremQE')
@@ -89,4 +88,9 @@ def lyrics_search(message): # /lyrics_search <text>
     bot.send_message(message.from_user.id, ans)
 
 
-bot.polling(none_stop=True, interval=0)
+while True:
+    try:
+        bot.polling(none_stop=True)
+
+    except Exception as e:
+        time.sleep(5)
