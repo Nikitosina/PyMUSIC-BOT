@@ -2,7 +2,7 @@ import telebot
 import logging
 from telebot import apihelper
 from pprint import pprint
-from Api_Helper import LastFM, YandexTranslator
+from Api_Helper import LastFM, YandexTranslator, readable_time
 
 logging.basicConfig(level=logging.INFO, filename='bot.log')
 
@@ -54,6 +54,13 @@ def track(message):
         ans, img_url = lfm.get_track(args[0])
     else:
         ans, img_url = lfm.get_track(args[0], args[1])
+    bot.send_photo(message.from_user.id, img_url, ans)
+
+
+@bot.message_handler(commands=['album'])
+def album(message):
+    args = [i.strip() for i in ' '.join(message.text.split()[1:]).split(',')]
+    ans, img_url = lfm.get_album(args[0], args[1])
     bot.send_photo(message.from_user.id, img_url, ans)
 
 

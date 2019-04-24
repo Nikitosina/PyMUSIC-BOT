@@ -50,12 +50,28 @@ class LastFM:
     def get_track(self, track, artist=None):
         params = {'api_key': self.key, 'method': 'track.search', 'artist': artist, 'format': 'json', 'track': track}
         resp = requests.get(self.url, params=params).json()
-        pprint(resp)
         data = resp['results']['trackmatches']['track'][0]
 
         res = data['artist'] + ' - ' + data['name']
         img_url = data['image'][-1]['#text']
         res += '\n\n' + data['url']
+        return res, img_url
+
+    def get_album(self, artist, album):
+        params = {'api_key': self.key, 'method': 'album.getinfo', 'artist': artist, 'album': album, 'format': 'json'}
+        resp = requests.get(self.url, params=params).json()
+        pprint(resp)
+
+        res = resp['album']['artist'] + ' - ' + resp['album']['name'] + '\n'
+        duration = 0
+        tracks = ''
+        for track in resp['album']['tracks']['track']:
+            duration += int(track['duration'])
+            tracks += track['@attr']['rank'] + '. ' + track['name'] + ' (' + readable_time(int(track['duration'])) + ')\n'
+        res += 'Продолжительность: ' + readable_time(duration) + '\n\n'
+        res += tracks[:-1] + '\n\n'
+        res += resp['album']['url']
+        img_url = resp['album']['image'][-1]['#text']
         return res, img_url
 
 
@@ -73,3 +89,10 @@ class YandexTranslator:
                 "text": text
             })
         return "\n\n".join([response.json()["text"][0]])
+
+
+def readable_time(secs):
+    minutes = secs // 60
+    secs = secs % 60
+    res = str(minutes) + ':' + str(secs)
+    return res
