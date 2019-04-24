@@ -8,6 +8,11 @@ class LastFM:
         self.secret = secret
         self.url = 'http://ws.audioscrobbler.com/2.0/'
 
+    def abort_case(self, resp):
+        if 'error' in resp:
+            return True
+        return False
+
     def get_top(self, artist=None, limit=10):
         params = {'api_key': self.key, 'method': 'artist.gettoptracks', 'format': 'json', 'limit': limit}
         if artist:
@@ -15,6 +20,8 @@ class LastFM:
         else:
             params['method'] = 'chart.gettoptracks'
         resp = requests.get(self.url, params=params).json()
+        if self.abort_case(resp):
+            return 'Что-то пошло не так, попробуйте ещё раз'
 
         if artist:
             res = 'Итак, лучшие треки ' + resp['toptracks']['@attr']['artist'] + '\n\n'
@@ -30,6 +37,8 @@ class LastFM:
     def get_info(self, artist, lang='ru'):
         params = {'api_key': self.key, 'method': 'artist.getinfo', 'format': 'json', 'lang': lang, 'artist': artist}
         resp = requests.get(self.url, params=params).json()
+        if self.abort_case(resp):
+            return 'Что-то пошло не так, попробуйте ещё раз'
 
         res = 'Информация о ' + resp['artist']['name'] + '\n\n'
 
@@ -50,6 +59,8 @@ class LastFM:
     def get_track(self, track, artist=None):
         params = {'api_key': self.key, 'method': 'track.search', 'artist': artist, 'format': 'json', 'track': track}
         resp = requests.get(self.url, params=params).json()
+        if self.abort_case(resp):
+            return 'Что-то пошло не так, попробуйте ещё раз'
         data = resp['results']['trackmatches']['track'][0]
 
         res = data['artist'] + ' - ' + data['name']
@@ -60,7 +71,8 @@ class LastFM:
     def get_album(self, artist, album):
         params = {'api_key': self.key, 'method': 'album.getinfo', 'artist': artist, 'album': album, 'format': 'json'}
         resp = requests.get(self.url, params=params).json()
-        pprint(resp)
+        if self.abort_case(resp):
+            return 'Что-то пошло не так, попробуйте ещё раз'
 
         res = resp['album']['artist'] + ' - ' + resp['album']['name'] + '\n'
         duration = 0
@@ -81,10 +93,18 @@ class MusiXmatch:
         self.key = key
         self.url = 'https://api.musixmatch.com/ws/1.1/'
 
+    def abort_case(self, resp):
+        if resp['message']['header']['status_code'] != 200 or not resp['message']['body']['track_list']:
+            return True
+        return False
+
     def get_track_info(self, track=None, artist=None):
         url = self.url + 'track.search'
         params = {'apikey': self.key, 'q_artist': artist, 'q_track': track, 's_track_rating': 'desc'}
         resp = requests.get(url, params=params).json()
+        pprint(resp)
+        if self.abort_case(resp):
+            return 'укыс', 'acre', 'awfce', 'awefer', 'afcers'
 
         for track in resp['message']['body']['track_list']:
             if track['track']['has_lyrics'] == 1:
@@ -96,6 +116,8 @@ class MusiXmatch:
         url = self.url + 'track.lyrics.get'
         params = {'apikey': self.key, 'track_id': track_id}
         resp = requests.get(url, params=params).json()
+        if self.abort_case(resp):
+            return 'Что-то пошло не так, попробуйте ещё раз'
 
         res = art + ' - ' + name + '\n\n'
         lyrics = resp['message']['body']['lyrics']['lyrics_body']
@@ -107,6 +129,8 @@ class MusiXmatch:
         url = self.url + 'track.search'
         params = {'apikey': self.key, 'q_lyrics': lyrics, 'page_size': limit, 's_track_rating': 'desc'}
         resp = requests.get(url, params=params).json()
+        if self.abort_case(resp):
+            return 'Что-то пошло не так, попробуйте ещё раз'
         track_list = resp['message']['body']['track_list']
 
         res = 'Совпадения:\n\n'
@@ -114,7 +138,8 @@ class MusiXmatch:
             track = track_list[i]['track']
             res += str(i + 1) + '. ' + track['artist_name'] + ' - ' + track['track_name']
             if track['primary_genres']['music_genre_list']:
-                res += ' (' + track['primary_genres']['music_genre_list'][0]['music_genre']['music_genre_name'] + ')\n'
+                res += ' (' + track['primary_genres']['music_genre_list'][0]['music_genre']['music_genre_name'] + ')'
+            res += '\n'
 
         return res[:-1]
 
