@@ -103,6 +103,21 @@ class MusiXmatch:
         res += lyrics + '\n\n' + 'Полный текст: ' + full_lyrics
         return res
 
+    def get_info_by_lyrics(self, lyrics, limit=10):
+        url = self.url + 'track.search'
+        params = {'apikey': self.key, 'q_lyrics': lyrics, 'page_size': limit, 's_track_rating': 'desc'}
+        resp = requests.get(url, params=params).json()
+        track_list = resp['message']['body']['track_list']
+
+        res = 'Совпадения:\n\n'
+        for i in range(len(track_list)):
+            track = track_list[i]['track']
+            res += str(i + 1) + '. ' + track['artist_name'] + ' - ' + track['track_name']
+            if track['primary_genres']['music_genre_list']:
+                res += ' (' + track['primary_genres']['music_genre_list'][0]['music_genre']['music_genre_name'] + ')\n'
+
+        return res[:-1]
+
 
 class YandexTranslator:
     def __init__(self, key, dest='en-ru'):

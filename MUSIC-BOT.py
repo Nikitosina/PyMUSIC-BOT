@@ -13,7 +13,7 @@ lfm = LastFM(API_KEY, API_SECRET)
 yt = YandexTranslator('trnsl.1.1.20190407T111208Z.8aefe4bc9bb48f64.c75fe021dae573b3f89516244159eb075f0f0163')
 musix = MusiXmatch('348e28b8e5487d197cda48a17debe1bb')
 
-# print(musix.get_lyrics(track='Stricken', artist='Disturbed'))
+# print(musix.get_info_by_lyrics('Never say, nihilist of modern day'))
 
 bot = telebot.TeleBot('888587053:AAFXvpSr0VvvFkZZQOUlCveyzaeuImremQE')
 
@@ -74,6 +74,13 @@ def lyrics(message): # /lyrics Stricken, <Disturbed>
         ans = musix.get_lyrics(args[0])
     else:
         ans = musix.get_lyrics(args[0], args[1])
+    bot.send_message(message.from_user.id, ans)
+
+
+@bot.message_handler(commands=['lyrics_search'])
+def lyrics_search(message):
+    args = ' '.join([i.strip() for i in message.text.split()[1:]])
+    ans = musix.get_info_by_lyrics(args)
     bot.send_message(message.from_user.id, ans)
 
 
