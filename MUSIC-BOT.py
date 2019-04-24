@@ -2,7 +2,7 @@ import telebot
 import logging
 from telebot import apihelper
 from pprint import pprint
-from Api_Helper import LastFM, YandexTranslator, readable_time
+from Api_Helper import LastFM, YandexTranslator, MusiXmatch, readable_time
 
 logging.basicConfig(level=logging.INFO, filename='bot.log')
 
@@ -11,6 +11,9 @@ API_SECRET = 'd741138b2ad7a61abbbcfb6b2926adab'
 
 lfm = LastFM(API_KEY, API_SECRET)
 yt = YandexTranslator('trnsl.1.1.20190407T111208Z.8aefe4bc9bb48f64.c75fe021dae573b3f89516244159eb075f0f0163')
+musix = MusiXmatch('348e28b8e5487d197cda48a17debe1bb')
+
+# print(musix.get_lyrics(track='Stricken', artist='Disturbed'))
 
 bot = telebot.TeleBot('888587053:AAFXvpSr0VvvFkZZQOUlCveyzaeuImremQE')
 
@@ -25,7 +28,7 @@ def handle_start(message):
 
 
 @bot.message_handler(commands=['top'])
-def top(message):
+def top(message): # /top <Disturbed>, <5>
     ans = 'Ничего не найдено, попробуйте еще раз'
     args = [i.strip() for i in ' '.join(message.text.split()[1:]).split(',')]
     print(args)
@@ -39,7 +42,7 @@ def top(message):
 
 
 @bot.message_handler(commands=['info'])
-def info(message):
+def info(message): # /info Disturbed
     args = ' '.join([i.strip() for i in message.text.split()[1:]])
     ans, img_url = lfm.get_info(args)
     # ans = yt.translate(ans)
@@ -48,7 +51,7 @@ def info(message):
 
 
 @bot.message_handler(commands=['track'])
-def track(message):
+def track(message): # /track Stricken, <Disturbed>
     args = [i.strip() for i in ' '.join(message.text.split()[1:]).split(',')]
     if len(args) == 1:
         ans, img_url = lfm.get_track(args[0])
@@ -58,10 +61,20 @@ def track(message):
 
 
 @bot.message_handler(commands=['album'])
-def album(message):
+def album(message): # /album Disturbed, Ten Thousand Fists
     args = [i.strip() for i in ' '.join(message.text.split()[1:]).split(',')]
     ans, img_url = lfm.get_album(args[0], args[1])
     bot.send_photo(message.from_user.id, img_url, ans)
+
+
+@bot.message_handler(commands=['lyrics'])
+def lyrics(message): # /lyrics Stricken, <Disturbed>
+    args = [i.strip() for i in ' '.join(message.text.split()[1:]).split(',')]
+    if len(args) == 1:
+        ans = musix.get_lyrics(args[0])
+    else:
+        ans = musix.get_lyrics(args[0], args[1])
+    bot.send_message(message.from_user.id, ans)
 
 
 bot.polling(none_stop=True, interval=0)

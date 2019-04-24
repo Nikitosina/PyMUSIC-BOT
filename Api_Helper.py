@@ -67,12 +67,41 @@ class LastFM:
         tracks = ''
         for track in resp['album']['tracks']['track']:
             duration += int(track['duration'])
-            tracks += track['@attr']['rank'] + '. ' + track['name'] + ' (' + readable_time(int(track['duration'])) + ')\n'
+            tracks += track['@attr']['rank'] + '. ' + track['name'] + ' (' + readable_time(
+                int(track['duration'])) + ')\n'
         res += 'Продолжительность: ' + readable_time(duration) + '\n\n'
         res += tracks[:-1] + '\n\n'
         res += resp['album']['url']
         img_url = resp['album']['image'][-1]['#text']
         return res, img_url
+
+
+class MusiXmatch:
+    def __init__(self, key):
+        self.key = key
+        self.url = 'https://api.musixmatch.com/ws/1.1/'
+
+    def get_track_info(self, track=None, artist=None):
+        url = self.url + 'track.search'
+        params = {'apikey': self.key, 'q_artist': artist, 'q_track': track, 's_track_rating': 'desc'}
+        resp = requests.get(url, params=params).json()
+
+        for track in resp['message']['body']['track_list']:
+            if track['track']['has_lyrics'] == 1:
+                return track['track']['track_name'], track['track']['album_name'], track['track']['artist_name'], \
+                       track['track']['track_id'], track['track']['track_share_url']
+
+    def get_lyrics(self, track, artist=None):
+        name, album, art, track_id, full_lyrics = self.get_track_info(track, artist)
+        url = self.url + 'track.lyrics.get'
+        params = {'apikey': self.key, 'track_id': track_id}
+        resp = requests.get(url, params=params).json()
+
+        res = art + ' - ' + name + '\n\n'
+        lyrics = resp['message']['body']['lyrics']['lyrics_body']
+        lyrics = lyrics[:lyrics.rfind('...') + 3]
+        res += lyrics + '\n\n' + 'Полный текст: ' + full_lyrics
+        return res
 
 
 class YandexTranslator:
@@ -83,11 +112,11 @@ class YandexTranslator:
 
     def translate(self, text):
         response = requests.get(self.url,
-            params={
-                "key": self.key,
-                "lang": self.dest,
-                "text": text
-            })
+                                params={
+                                    "key": self.key,
+                                    "lang": self.dest,
+                                    "text": text
+                                })
         return "\n\n".join([response.json()["text"][0]])
 
 
