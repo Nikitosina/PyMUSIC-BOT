@@ -142,6 +142,29 @@ class MusiXmatch:
 
         return res[:-1]
 
+    def get_related(self, artist, limit=10):
+        # https://api.musixmatch.com/ws/1.1/artist.related.get?artist_id=142&page_size=5&page=1&apikey=348e28b8e5487d197cda48a17debe1bb
+        url = self.url + 'artist.search'
+        params = {'apikey': self.key, 'q_artist': artist, 'page_size': 1}
+        resp = requests.get(url, params=params).json()
+
+        if self.abort_case(resp) or not resp['message']['body']['artist_list']:
+            return 'Что-то пошло не так, попробуйте ещё раз'
+        id = resp['message']['body']['artist_list'][0]['artist']['artist_id']
+
+        url = self.url + 'artist.related.get'
+        params = {'apikey': self.key, 'artist_id': id, 'page_size': limit, 'page': 1}
+        resp = requests.get(url, params=params).json()
+
+        if self.abort_case(resp) or not resp['message']['body']['artist_list']:
+            return 'Что-то пошло не так, попробуйте ещё раз'
+
+        res = f'Артисты, похожие на {artist.title()}:\n\n'
+        for i in range(len(resp['message']['body']['artist_list'])):
+            artist = resp['message']['body']['artist_list'][i]
+            res += str(i + 1) + '. ' + artist['artist']['artist_name'] + '\n'
+        return res[:-1]
+
 
 class YandexTranslator:
     def __init__(self, key, dest='en-ru'):

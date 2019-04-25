@@ -12,10 +12,10 @@ lfm = LastFM(API_KEY, API_SECRET)
 yt = YandexTranslator('trnsl.1.1.20190407T111208Z.8aefe4bc9bb48f64.c75fe021dae573b3f89516244159eb075f0f0163')
 musix = MusiXmatch('348e28b8e5487d197cda48a17debe1bb')
 
-print(musix.get_lyrics('seckn rkg'))
+# print(musix.get_related('Disturbed'))
 # print(musix.get_info_by_lyrics('Never say, nihilist of modern day'))
 
-bot = telebot.TeleBot('888587053:AAFXvpSr0VvvFkZZQOUlCveyzaeuImremQE')
+bot = telebot.TeleBot('822526580:AAGmC9EswcRd0bvmhS389t-iPPGF5KZNv9U')
 
 
 @bot.message_handler(commands=['start'])
@@ -81,9 +81,19 @@ def lyrics(message): # /lyrics Stricken, <Disturbed>
     bot.send_message(message.from_user.id, ans)
 
 
-@bot.message_handler(commands=['lyrics_search'])
-def lyrics_search(message): # /lyrics_search <text>
-    args = ' '.join([i.strip() for i in message.text.split()[1:]])
+@bot.message_handler(commands=['related'])
+def related(message): # /related Disturbed, <5>
+    args = [i.strip() for i in ' '.join(message.text.split()[1:]).split(',')]
+    if len(args) == 2:
+        ans = musix.get_related(args[0], args[1])
+    else:
+        ans = musix.get_related(args[0])
+    bot.send_message(message.from_user.id, ans)
+
+
+@bot.message_handler(content_types=['text'])
+def lyrics_search(message): # <text>
+    args = message.text
     ans = musix.get_info_by_lyrics(args)
     bot.send_message(message.from_user.id, ans)
 
@@ -91,6 +101,5 @@ def lyrics_search(message): # /lyrics_search <text>
 while True:
     try:
         bot.polling(none_stop=True)
-
     except Exception as e:
         time.sleep(5)
