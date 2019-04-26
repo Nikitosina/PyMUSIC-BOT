@@ -1,3 +1,4 @@
+import bs4
 import requests
 from pprint import pprint
 
@@ -143,7 +144,6 @@ class MusiXmatch:
         return res[:-1]
 
     def get_related(self, artist, limit=10):
-        # https://api.musixmatch.com/ws/1.1/artist.related.get?artist_id=142&page_size=5&page=1&apikey=348e28b8e5487d197cda48a17debe1bb
         url = self.url + 'artist.search'
         params = {'apikey': self.key, 'q_artist': artist, 'page_size': 1}
         resp = requests.get(url, params=params).json()
@@ -187,3 +187,20 @@ def readable_time(secs):
     secs = secs % 60
     res = str(minutes) + ':' + str(secs)
     return res
+
+
+def amalgama_parser(artist, track):
+    artist, track = artist.strip().lower(), track.strip().lower()
+    artist = artist.replace(' ', '_')
+    track = track.replace(' ', '_')
+    soup = bs4.BeautifulSoup(requests.get(f'https://www.amalgama-lab.com/songs/{artist[0]}/{artist}/{track}.html').text, 'html.parser')
+    all_text = soup.find_all("div", class_="translate")
+    if not all_text:
+        return 'Перевод не найден'
+
+    res = ''
+    for i in all_text:
+        if type(i.contents[0]) == bs4.element.NavigableString:
+            res += str(i.contents[0]) + '\n'
+    return res
+

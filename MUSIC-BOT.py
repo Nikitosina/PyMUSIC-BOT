@@ -1,7 +1,7 @@
 import telebot
 import logging
 import time
-from Api_Helper import LastFM, YandexTranslator, MusiXmatch, readable_time
+from Api_Helper import LastFM, YandexTranslator, MusiXmatch, readable_time, amalgama_parser
 
 logging.basicConfig(level=logging.INFO, filename='bot.log')
 
@@ -12,6 +12,7 @@ lfm = LastFM(API_KEY, API_SECRET)
 yt = YandexTranslator('trnsl.1.1.20190407T111208Z.8aefe4bc9bb48f64.c75fe021dae573b3f89516244159eb075f0f0163')
 musix = MusiXmatch('348e28b8e5487d197cda48a17debe1bb')
 
+# amalgama_parser('disturbed', 'strircxtcre')
 # print(musix.get_related('Disturbed'))
 # print(musix.get_info_by_lyrics('Never say, nihilist of modern day'))
 
@@ -26,9 +27,11 @@ def handle_start(message):
           '/track <name>, <*artist> - Информация о треке\n' \
           '/album <artist>, <name> - Информация об альбоме\n' \
           '/lyrics <name>, <*artist> - Найти текст песни\n' \
-          '/lyrics_search <text> - Найти песню по её тексту'
+          '/translate <artist>, <name> - Перевод текста песни\n' \
+          '/related <artist>, <*limit> - Найти похожих исполнителей\n\n' \
+          'А вводя любой текст я найду его совпадения с треками в базе :)'
 
-    bot.send_message(message.from_user.id, res)
+    bot.send_photo(message.from_user.id, 'https://downloader.disk.yandex.ru/preview/6d9e58180c1e23d73e800297deb87e0a397ab093bcff717848dc12ab53211e93/5cc359e4/3dRGu0Z5srxJ-wDhTr5kqRPy3OhggdAGaysFnebIrMYnJo9QkrP0FNEOf7JmpYGDY6dx9DUUQX_FI4rfEYM38A%3D%3D?uid=0&filename=ROCK.png&disposition=inline&hash=&limit=0&content_type=image%2Fpng&tknv=v2&size=2048x2048', res)
 
 
 @bot.message_handler(commands=['top'])
@@ -78,6 +81,13 @@ def lyrics(message): # /lyrics Stricken, <Disturbed>
         ans = musix.get_lyrics(args[0])
     else:
         ans = musix.get_lyrics(args[0], args[1])
+    bot.send_message(message.from_user.id, ans)
+
+
+@bot.message_handler(commands=['translate'])
+def translate(message): # /translate Disturbed, Stricken
+    args = [i.strip() for i in ' '.join(message.text.split()[1:]).split(',')]
+    ans = amalgama_parser(args[0], args[1])
     bot.send_message(message.from_user.id, ans)
 
 
