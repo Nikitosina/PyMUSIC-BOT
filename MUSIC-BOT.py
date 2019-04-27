@@ -5,18 +5,18 @@ from Api_Helper import LastFM, YandexTranslator, MusiXmatch, readable_time, amal
 
 logging.basicConfig(level=logging.INFO, filename='bot.log')
 
-API_KEY = '423cad31da5633fa7e92daaea2c7170d'
-API_SECRET = 'd741138b2ad7a61abbbcfb6b2926adab'
+API_KEY = 'KEY'
+API_SECRET = 'KEY'
 
 lfm = LastFM(API_KEY, API_SECRET)
-yt = YandexTranslator('trnsl.1.1.20190407T111208Z.8aefe4bc9bb48f64.c75fe021dae573b3f89516244159eb075f0f0163')
-musix = MusiXmatch('348e28b8e5487d197cda48a17debe1bb')
+yt = YandexTranslator('KEY')
+musix = MusiXmatch('KEY')
 
 # amalgama_parser('disturbed', 'strircxtcre')
 # print(musix.get_related('Disturbed'))
 # print(musix.get_info_by_lyrics('Never say, nihilist of modern day'))
 
-bot = telebot.TeleBot('822526580:AAGmC9EswcRd0bvmhS389t-iPPGF5KZNv9U')
+bot = telebot.TeleBot('KEY')
 
 
 @bot.message_handler(commands=['start'])
