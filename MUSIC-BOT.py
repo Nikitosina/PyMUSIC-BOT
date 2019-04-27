@@ -87,6 +87,9 @@ def lyrics(message): # /lyrics Stricken, <Disturbed>
 @bot.message_handler(commands=['translate'])
 def translate(message): # /translate Disturbed, Stricken
     args = [i.strip() for i in ' '.join(message.text.split()[1:]).split(',')]
+    if len(args) != 2:
+        bot.send_message(message.from_user.id, 'Неверно переданы параметры')
+        return
     ans = amalgama_parser(args[0], args[1])
     bot.send_message(message.from_user.id, ans)
 
@@ -112,4 +115,4 @@ while True:
     try:
         bot.polling(none_stop=True)
     except Exception as e:
-        time.sleep(5)
+        pass

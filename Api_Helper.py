@@ -185,6 +185,8 @@ class YandexTranslator:
 def readable_time(secs):
     minutes = secs // 60
     secs = secs % 60
+    if len(str(secs)) == 1:
+        secs = '0' + str(secs)
     res = str(minutes) + ':' + str(secs)
     return res
 
@@ -201,6 +203,7 @@ def amalgama_parser(artist, track):
     res = ''
     for i in all_text:
         if type(i.contents[0]) == bs4.element.NavigableString:
-            res += str(i.contents[0]) + '\n'
+            res += str(i.contents[0])
+            if '\n' not in str(i.contents[0]):
+                res += '\n'
     return res
-
